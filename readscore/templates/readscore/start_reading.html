@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Початок читання</title>
+</head>
+<body>
+    <h1>Початок читання</h1>
+    <p>Ви обрали книгу: {{ book.title }}</p>
+
+    <a href="{% url 'start_reading' book.pk %}">Почати читати</a>
+
+</body>
+</html>

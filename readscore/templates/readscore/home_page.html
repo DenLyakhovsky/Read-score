@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="card-group">
+    {% for i in book %}
+    <div class="card">
+        <div class="card-body">
+            <h3 class="card-title">{{ i.title }}</h3>
+            <p class="card-text"><u><i>Опис</i></u>: {{ i.description }}</p>
+        </div>
+        <a class="btn btn-primary" href="{% url 'about' i.pk %}" role="button">Перейти до книги</a>
+    </div>
+    <br>
+    <br>
+    {% endfor %}
+
+</div>
+</body>
+</html>
