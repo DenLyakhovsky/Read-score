@@ -37,8 +37,6 @@ class HomePage(ListView):
     Клас, який створює сторінку з усіма книгами
     """
 
-    reading_stats_last_7_days.delay()
-
     model = Book
     template_name = 'readscore/home_page.html'
     context_object_name = 'book'
@@ -93,6 +91,10 @@ class EndReading(View):
     def get(self, request, pk):
         book = Book.objects.get(pk=pk)
         form = self.form_class
+
+        # Celery функція, для асинхронної роботи
+        # reading_stats_last_7_days().delay()
+
         return render(request, self.template_name, {'form': form, 'book': book})
 
     def post(self, request, pk):

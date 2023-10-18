@@ -1,46 +1,35 @@
-from celery import shared_task
-from datetime import datetime, timedelta
-from django.db.models import Sum
-from .models import ReadingSession
-from django.db.models import F, ExpressionWrapper, fields
+from datetime import timedelta
+from django.utils.dateparse import parse_duration
+from .models import Book, ReadingStats
 
 
-@shared_task
+def format_duration(duration_str):
+    # Перетворення рядка часу в об'єкт timedelta
+    time_obj = timedelta(seconds=duration_str)
+
+    # Видобування годин, хвилин та секунд з об'єкта timedelta
+    hours, remainder = divmod(time_obj.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    # Формування рядка у форматі "HH:MM:SS"
+    time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+    return time_str
+
+
 def reading_stats_last_7_days():
-    today = datetime.now()
+    books = Book.objects.all()
 
-    # Отримати дату, яка була 7 днів тому
-    seven_days_ago = today - timedelta(days=7)
+    for book in books:
+        # Дістаємо час загального читання
+        book_read = book.date_of_last_reading
 
-    # Отримати дату, яка була 30 днів тому
-    thirty_days_ago = today - timedelta(days=30)
+        # Взнаєм скільки в день читав протягом тижня
+        average_time = book_read / 7
 
-    # Отримати статистику за останні 7 днів
-    last_7_days_statistics = ReadingSession.objects.filter(
-        user='happy',
-        start_time__gte=seven_days_ago,
-        start_time__lte=today,
-    ).annotate(
-        reading_duration=ExpressionWrapper(F('end_time') - F('start_time'), output_field=fields.DurationField())
-    ).aggregate(total_reading_time_7_days=Sum('reading_duration'))['total_reading_time_7_days']
+        # Перетворюємо в timedelta формат
+        stats = parse_duration(format_duration(average_time.total_seconds()))
 
-    return last_7_days_statistics
+        ReadingStats.objects.create(reading_for_7_days=stats)
 
-
-"""
-def total_reading_time_last_7_days(user):
-    # Отримання поточної дати
-    today = timezone.now().date()
-    
-    # Відніміть 7 днів від поточної дати
-    seven_days_ago = today - timezone.timedelta(days=7)
-    
-    # Запит до бази даних для обчислення загального часу читання за останні 7 днів
-    total_time_last_7_days = ReadingTime.objects.filter(user=user, date__gte=seven_days_ago, date__lte=today).aggregate(Sum('time'))['time__sum']
-    
-    # Перевірка, чи є значення None
-    if total_time_last_7_days is None:
-        total_time_last_7_days = 0.0
-    
-    return total_time_last_7_days
-"""
+    return True

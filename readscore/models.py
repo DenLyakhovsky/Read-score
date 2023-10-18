@@ -25,3 +25,10 @@ class ReadingSession(models.Model):
 
     def __str__(self):
         return f'{self.user}: {self.book}'
+
+
+class ReadingStats(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    reading_for_7_days = models.DurationField(default=0, verbose_name="reading_for_7_days")
+    reading_for_30_days = models.DurationField(default=0, blank=True, verbose_name="reading_for_30_days")

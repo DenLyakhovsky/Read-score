@@ -10,12 +10,19 @@ services:
         build:
             context: .
         ports:
-            -   "8000:8000"
+            - "8000:8000"
 
-        command: ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+        command: [ "python3", "manage.py", "runserver", "0.0.0.0:8000" ]
+
 
     worker:
         restart: always
         build:
             context: .
-        command: ['celery', '--workdir=./', '-A', 'readscore_engine', 'worker']
+        command: [ 'celery', '--workdir=./', '-A', 'readscore_engine', 'worker' ]
+
+    celery-beats:
+        restart: always
+        build:
+            context: .
+        command: ['celery', '--workdir=./', '-A', 'readscore_engine', 'beat', '-l', 'INFO', '--scheduler', 'django_celery_beat.schedulers:DatabaseScheduler']
