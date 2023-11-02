@@ -5,13 +5,11 @@
 </head>
 <body>
 <h4>Приємного читання</h4>
-<p>Як завершите читати, виберіть книгу та натисніть кнопку</p>
 
-<p>Ви завершили читання книги: <b>{{ book.title }}</b></p>
+<p>Книга: <b>{{ book.title }}</b></p>
 
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
     <button type="submit">Завершити читання</button>
 </form>
 

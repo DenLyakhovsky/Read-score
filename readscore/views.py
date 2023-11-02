@@ -57,6 +57,8 @@ class StartReading(View):
     Клас, яка починає відлік читання
     """
 
+    permission_classes = [AllowAny]
+
     template_name = 'readscore/start_reading.html'
     form_class = StartReadingSessionForm
 
@@ -84,6 +86,8 @@ class EndReading(View):
     Клас, який закінчує час відліку, розраховує час та додає в БД
     """
 
+    permission_classes = [AllowAny]
+
     template_name = 'readscore/end_reading.html'
     form_class = EndReadingSessionForm
 
@@ -101,25 +105,24 @@ class EndReading(View):
         book = Book.objects.get(pk=pk)
         form = self.form_class(request.POST)
 
-        if form.is_valid():
-            # Записує кінцеву дату читання
-            end_time = timezone.now()
-            reading_session = ReadingSession.objects.filter(user=request.user, book=book, end_time__isnull=True).first()
+        # Записує кінцеву дату читання
+        end_time = timezone.now()
+        reading_session = ReadingSession.objects.filter(user=request.user, book=book, end_time__isnull=True).first()
 
-            if reading_session:
-                reading_session.end_time = end_time
-                reading_session.save()
+        if reading_session:
+            reading_session.end_time = end_time
+            reading_session.save()
 
-                # Визначає кінцевий час
-                reading_sessions = ReadingSession.objects.filter(book=book)
-                total_reading_time = sum(
-                    (session.end_time - session.start_time).total_seconds() for session in reading_sessions)
+            # Визначає кінцевий час
+            reading_sessions = ReadingSession.objects.filter(book=book)
+            total_reading_time = sum(
+                (session.end_time - session.start_time).total_seconds() for session in reading_sessions)
 
-                total = parse_duration(seconds_to_hhmmss(int(total_reading_time)))
+            total = parse_duration(seconds_to_hhmmss(int(total_reading_time)))
 
-                # Додає кінцевий час у секундах до БД та зберігає
-                book.date_of_last_reading = total
-                book.save()
+            # Додає кінцевий час у секундах до БД та зберігає
+            book.date_of_last_reading = total
+            book.save()
 
             return redirect('about', pk=book.pk)
         return render(request, self.template_name, {'form': form, 'book': book})
